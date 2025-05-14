@@ -333,7 +333,7 @@ paths:
         '200':
           description: List of invitations
 
-  /v2/user/{user_id}/invitation/{invite_uuid}/accept:
+  /v2/invitation/{invite_uuid}/accept:
     post:
       tags: [Organization Invitations]
       summary: Accept Organization Invitation
@@ -354,7 +354,7 @@ paths:
         '200':
           description: Invitation accepted
 
-  /v2/user/{user_id}/invitation/{invite_uuid}/reject:
+  /v2/invitation/{invite_uuid}/reject:
     post:
       tags: [Organization Invitations]
       summary: Reject Organization Invitation
