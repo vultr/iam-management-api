@@ -842,6 +842,26 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Human-readable name of the policy
+                description:
+                  type: string
+                  description: Description of what the policy is for
+                policy_json:
+                  type: object
+                  description: JSON definition of allowed/denied actions and conditions
+              required:
+                - name
+                - description
+                - policy_json
       responses:
         '200':
           description: Policy updated
