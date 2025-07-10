@@ -302,110 +302,75 @@ paths:
         '200':
           description: List of suspended users
 
-  /v2/organizations/{org_uuid}/invite-user/{user_id}:
-    post:
-      tags: [Organization Invitations]
-      summary: Invite a User to Join Organization
-      operationId: inviteUserToOrganization
-      description: Invite a user to join the organization. Only Root users can send invites. Cannot invite self. Prevents duplicate pending invitations.
-      parameters:
-        - name: org_uuid
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '201':
-          description: Invitation created
-
   /v2/organizations/invitations:
-    get:
-      tags: [Organization Invitations]
-      summary: View My Organization Invitations
-      operationId: viewMyOrganizationInvitations
-      description: View invitations sent to the current user to join organizations.
-      responses:
-        '200':
-          description: List of invitations
-
-  /v2/invitation/{invite_uuid}/accept:
-    post:
-      tags: [Organization Invitations]
-      summary: Accept Organization Invitation
-      operationId: acceptOrganizationInvitation
-      description: Accept an invitation to join an organization. User must own the invite and the invite must be in pending status.
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: invite_uuid
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Invitation accepted
-
-  /v2/invitation/{invite_uuid}/reject:
-    post:
-      tags: [Organization Invitations]
-      summary: Reject Organization Invitation
-      operationId: rejectOrganizationInvitation
-      description: Reject an invitation to join an organization. User must own the invite and the invite must be in pending status.
-      parameters:
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: invite_uuid
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Invitation rejected
-
-  /v2/organizations/invitations/{org_uuid}:
     get:
       tags: [Organization Invitations]
       summary: View Invitations Sent by Organization
       operationId: viewInvitationsSentByOrganization
-      description: View all invitations sent by a specific organization.
-      parameters:
-        - name: org_uuid
-          in: path
-          required: true
-          schema:
-            type: string
+      description: View all invitations sent by a specific organization. Only users with acl_manage_users permission can view invites.
       responses:
         '200':
           description: List of invitations sent by organization
 
-  /v2/organizations/invitations/{org_uuid}/revoke:
-    post:
+  /v2/invitations/{invite_uuid}:
+    get:
       tags: [Organization Invitations]
-      summary: Revoke Organization Invitation
-      operationId: revokeOrganizationInvitation
-      description: Revoke a pending invitation that was sent by the organization.
+      summary: View Invitation
+      operationId: viewInvitation
+      description: View an invitation. Only users with acl_manage_users permission can view invites.
       parameters:
-        - name: org_uuid
+        - name: invite_uuid
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Invitation revoked
+          description: Invitation details
+
+  /v2/invitation:
+    post:
+      tags: [Organization Invitations]
+      summary: Invite a User to Join Organization
+      operationId: inviteUserToOrganization
+      description: Invite a user to join the organization. Only users with acl_manage_users permission can send invites. Cannot invite self. Prevents duplicate pending invitations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: Email address the invitation should be sent to
+                  example: "invited-person@example.org"
+                permissions:
+                  type: object
+                  description: JSON definition of allowed/denied ACL
+                  example: "{'roles': {'acl_dns': 'no', 'acl_vcr': 'no', 'acl_vke': 'no', 'acl_root': 'no', 'acl_abuse': 'no', 'acl_alerts': 'no', 'acl_billing': 'no', 'acl_support': 'no', 'acl_upgrade': 'yes', 'acl_firewall': 'no', 'acl_objstore': 'no', 'acl_loadbalancer': 'no', 'acl_manage_users': 'no', 'acl_provisioning': 'no', 'acl_subscriptions': 'yes', 'acl_subscriptions_view': 'yes'}}"
+              required:
+                - email
+                - permissions
+      responses:
+        '201':
+          description: Invitation created
+
+  /v2/invitation/{invite_uuid}/resend:
+    post:
+      tags: [Organization Invitations]
+      summary: Resend existing invitation to a User to Join Organization
+      operationId: resendInviteUserToOrganization
+      description: Resend existing invitation to a User to Join Organization. Only users with acl_manage_users permission can send invites. Existing invitation must be expired or rejected.
+      parameters:
+        - name: invite_uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Invitation resent
 
   /scim/v2/{org_id}/Users:
     post:
