@@ -312,7 +312,7 @@ paths:
         '200':
           description: List of invitations sent by organization
 
-  /v2/invitations/{invite_uuid}:
+  /v2/invitation/{invite_uuid}:
     get:
       tags: [Organization Invitations]
       summary: View Invitation
