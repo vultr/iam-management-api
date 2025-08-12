@@ -1,9 +1,8 @@
 openapi: 3.0.4
 info:
   title: IAM & SCIM Management API
-  version: 0.1.0
-  description: Identity, access management, and SCIM provisioning endpoints for users, groups, roles, policies, and sessions.
-
+  version: 1.0.0
+  description: Complete Identity, Access Management, and SCIM provisioning endpoints for users, groups, roles, policies, and sessions.
 
 tags:
   - name: Organizations
@@ -18,8 +17,8 @@ tags:
     description: SCIM-compliant endpoints for managing users within an organization
   - name: SCIM Groups
     description: SCIM-compliant endpoints for managing groups within an organization
-  - name: SCIM Group Membership
-    description: SCIM-compliant endpoints for managing user memberships within groups
+  - name: IAM Groups
+    description: Non-SCIM group management endpoints
   - name: IAM Roles
     description: Endpoints for managing IAM roles within an organization
   - name: IAM Policies
@@ -37,8 +36,8 @@ tags:
   - name: IAM Assumed Roles
     description: Manage temporary role assumptions for users within an organization
 
-
 paths:
+  # Organizations
   /v2/organizations:
     post:
       tags: [Organizations]
@@ -76,7 +75,7 @@ paths:
       tags: [Organizations]
       summary: Update an Organization
       operationId: updateOrganization
-      description: Update an organization’s name (Root role required).
+      description: Update an organization's name (Root role required).
       parameters:
         - name: uuid
           in: path
@@ -117,6 +116,7 @@ paths:
         '200':
           description: Organization restored
 
+  # SCIM Settings
   /v2/organizations/{uuid}/scim/enable:
     post:
       tags: [SCIM Settings]
@@ -165,6 +165,7 @@ paths:
         '200':
           description: SCIM token regenerated
 
+  # Organization Membership Management
   /v2/organizations/{uuid}/users/{user_id}:
     post:
       tags: [Organization Membership Management]
@@ -223,69 +224,6 @@ paths:
         '200':
           description: Root ownership swapped
 
-  /v2/organizations/{uuid}/user/{user_id}:
-    delete:
-      tags: [Organization Membership Management]
-      summary: Remove User from Organization
-      operationId: removeUserFromOrganization
-      description: Remove a user from the organization. Ensures not removing the last Root.
-      parameters:
-        - name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: User removed
-
-  /v2/organizations/{uuid}/user/{user_id}/suspend:
-    put:
-      tags: [Organization Membership Management]
-      summary: Suspend User in Organization
-      operationId: suspendUser
-      description: Suspend a user’s within the organization.
-      parameters:
-        - name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: User suspended
-
-  /v2/organizations/{uuid}/user/{user_id}/unsuspend:
-    put:
-      tags: [Organization Membership Management]
-      summary: Unsuspend User in Organization
-      operationId: unsuspendUser
-      description: Reactivate a suspended user’s within the organization.
-      parameters:
-        - name: uuid
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: User unsuspended
-
   /v2/organizations/{uuid}/suspended-users:
     get:
       tags: [Organization Membership Management]
@@ -302,6 +240,7 @@ paths:
         '200':
           description: List of suspended users
 
+  # Organization Invitations
   /v2/organizations/invitations:
     get:
       tags: [Organization Invitations]
@@ -348,7 +287,6 @@ paths:
                 permissions:
                   type: object
                   description: JSON definition of allowed/denied ACL
-                  example: "{'roles': {'acl_dns': 'no', 'acl_vcr': 'no', 'acl_vke': 'no', 'acl_root': 'no', 'acl_abuse': 'no', 'acl_alerts': 'no', 'acl_billing': 'no', 'acl_support': 'no', 'acl_upgrade': 'yes', 'acl_firewall': 'no', 'acl_objstore': 'no', 'acl_loadbalancer': 'no', 'acl_manage_users': 'no', 'acl_provisioning': 'no', 'acl_subscriptions': 'yes', 'acl_subscriptions_view': 'yes'}}"
               required:
                 - email
                 - permissions
@@ -372,923 +310,786 @@ paths:
         '200':
           description: Invitation resent
 
-  /scim/v2/{org_id}/Users:
+  # SCIM Users
+  /scim/v2/Users:
     post:
       tags: [SCIM Users]
       summary: Create a User
       operationId: createScimUser
       description: Create a new user within the organization under SCIM provisioning.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '201':
           description: User created
-
     get:
       tags: [SCIM Users]
       summary: List Users
       operationId: listScimUsers
       description: List all users provisioned under the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: List of users
 
-  /scim/v2/{org_id}/Users/{id}:
+  /scim/v2/Users/{id}:
     get:
       tags: [SCIM Users]
       summary: Get a User
       operationId: getScimUser
       description: Retrieve a specific user by ID within the organization.
       parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: User details
-
     put:
       tags: [SCIM Users]
       summary: Update a User
       operationId: updateScimUser
       description: Replace a user's attributes (full update) under SCIM.
       parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: User updated
-
     patch:
       tags: [SCIM Users]
       summary: Patch User Attributes
       operationId: patchScimUser
       description: Perform a partial update on a user's attributes according to SCIM PATCH operations.
       parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
           description: User attributes patched
-
     delete:
       tags: [SCIM Users]
       summary: Permanently Delete a User
       operationId: deleteScimUser
       description: Permanently delete a user. Restricted to Root Org Vultr users (admin-only action, not IdP-managed).
       parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '204':
           description: User permanently deleted
 
-  /scim/v2/{org_id}/Groups:
+  # SCIM Groups
+  /scim/v2/Groups:
     post:
       tags: [SCIM Groups]
-      summary: Create a Group
+      summary: Create a Group (SCIM)
       operationId: createScimGroup
       description: Create a new group within the organization under SCIM provisioning.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '201':
           description: Group created
-
     get:
       tags: [SCIM Groups]
-      summary: List Groups
+      summary: List Groups (SCIM)
       operationId: listScimGroups
       description: List all groups provisioned under the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: List of groups
 
-  /scim/v2/{org_id}/Groups/{group_id}:
+  /scim/v2/Groups/{id}:
     get:
       tags: [SCIM Groups]
-      summary: Get a Group
+      summary: Get Group (SCIM)
       operationId: getScimGroup
       description: Retrieve a specific group by ID within the organization.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Group details
-
     put:
       tags: [SCIM Groups]
-      summary: Update a Group
+      summary: Update Group (SCIM)
       operationId: updateScimGroup
       description: Replace a group's attributes (full update) under SCIM.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Group updated
-
     patch:
       tags: [SCIM Groups]
-      summary: Patch Group Attributes
+      summary: Patch Group (SCIM)
       operationId: patchScimGroup
-      description: Perform a partial update on a group's attributes according to SCIM PATCH operations, including deactivation/reactivation.
+      description: Perform a partial update on a group's attributes according to SCIM PATCH operations.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Group attributes patched
-
     delete:
       tags: [SCIM Groups]
-      summary: Permanently Delete a Group
+      summary: Delete Group (SCIM)
       operationId: deleteScimGroup
       description: Permanently delete a group. Restricted to Root Org Vultr users (admin-only action, not IdP-managed).
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '204':
           description: Group permanently deleted
 
-  /scim/v2/{org_id}/Groups/{group_id}/Users/{user_id}:
+  # IAM Groups (non-SCIM)
+  /v2/groups:
+    get:
+      tags: [IAM Groups]
+      summary: List Groups
+      operationId: listGroups
+      description: List all IAM groups within the organization.
+      responses:
+        '200':
+          description: List of groups
     post:
-      tags: [SCIM Group Membership]
-      summary: Add User to Group
-      operationId: addUserToScimGroup
-      description: Add a user to a specific group within the organization under SCIM provisioning.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
+      tags: [IAM Groups]
+      summary: Create Group
+      operationId: createGroup
+      description: Create a new IAM group within the organization.
       responses:
         '201':
-          description: User added to group
+          description: Group created
 
-    delete:
-      tags: [SCIM Group Membership]
-      summary: Remove User from Group
-      operationId: removeUserFromScimGroup
-      description: Remove a user from a specific group within the organization under SCIM provisioning.
+  /v2/groups/{id}:
+    get:
+      tags: [IAM Groups]
+      summary: Get Group
+      operationId: getGroup
+      description: Retrieve a specific IAM group by ID.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: group_id
+      responses:
+        '200':
+          description: Group details
+    put:
+      tags: [IAM Groups]
+      summary: Update Group
+      operationId: updateGroup
+      description: Update an IAM group's attributes.
+      parameters:
+        - name: id
           in: path
           required: true
           schema:
-            type: integer
-        - name: user_id
+            type: string
+      responses:
+        '200':
+          description: Group updated
+    delete:
+      tags: [IAM Groups]
+      summary: Delete Group
+      operationId: deleteGroup
+      description: Soft delete an IAM group.
+      parameters:
+        - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '204':
-          description: User removed from group
+          description: Group deleted
 
-  /v2/organizations/{org_id}/iam/v1/roles:
+  /v2/groups/{id}/restore:
+    patch:
+      tags: [IAM Groups]
+      summary: Restore Group
+      operationId: restoreGroup
+      description: Restore a previously soft-deleted IAM group.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Group restored
+
+  /v2/groups/{id}/members:
+    post:
+      tags: [IAM Groups]
+      summary: Add Member to Group
+      operationId: addGroupMember
+      description: Add a user to an IAM group.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Member added to group
+
+  /v2/groups/{id}/members/{user-id}:
+    delete:
+      tags: [IAM Groups]
+      summary: Remove Member from Group
+      operationId: removeGroupMember
+      description: Remove a user from an IAM group.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: user-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Member removed from group
+
+  # IAM User-Policy Mappings
+  /v2/users/{id}/policies:
+    post:
+      tags: [IAM User-Policy Mappings]
+      summary: Attach Policy to User
+      operationId: attachPolicyToUser
+      description: Attach an IAM policy directly to a user.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy attached to user
+    get:
+      tags: [IAM User-Policy Mappings]
+      summary: List Policies Attached to User
+      operationId: listUserPolicies
+      description: List all policies directly attached to a user.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of policies attached to user
+
+  /v2/users/{id}/policies/{policy-id}:
+    delete:
+      tags: [IAM User-Policy Mappings]
+      summary: Detach Policy from User
+      operationId: detachPolicyFromUser
+      description: Detach an IAM policy from a user.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: policy-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy detached from user
+
+  # IAM Group-Policy Mappings
+  /v2/groups/{id}/policies:
+    post:
+      tags: [IAM Group-Policy Mappings]
+      summary: Attach Policy to Group
+      operationId: attachPolicyToGroup
+      description: Attach an IAM policy to a group.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy attached to group
+    get:
+      tags: [IAM Group-Policy Mappings]
+      summary: List Policies Attached to Group
+      operationId: listGroupPolicies
+      description: List all policies attached to a group.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of policies attached to group
+
+  /v2/groups/{id}/policies/{policy-id}:
+    delete:
+      tags: [IAM Group-Policy Mappings]
+      summary: Detach Policy from Group
+      operationId: detachPolicyFromGroup
+      description: Detach an IAM policy from a group.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: policy-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy detached from group
+
+  # IAM Roles
+  /v2/roles:
     post:
       tags: [IAM Roles]
       summary: Create Role
       operationId: createRole
       description: Create a new IAM role within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '201':
           description: Role created
-
     get:
       tags: [IAM Roles]
       summary: List Roles
       operationId: listRoles
       description: List all IAM roles within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: List of roles
 
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}:
+  /v2/roles/{id}:
     get:
       tags: [IAM Roles]
-      summary: Get Role Details
-      operationId: getRoleDetails
-      description: Retrieve details of a specific IAM role within the organization.
+      summary: Get Role
+      operationId: getRole
+      description: Retrieve a specific IAM role by ID.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Role details
-
     put:
       tags: [IAM Roles]
       summary: Update Role
       operationId: updateRole
-      description: Update the name and description of an existing IAM role.
+      description: Update an IAM role's attributes.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Role updated
-
     delete:
       tags: [IAM Roles]
       summary: Delete Role
       operationId: deleteRole
-      description: Delete an IAM role from the organization. Role-policy associations must be removed first.
+      description: Soft delete an IAM role.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '204':
           description: Role deleted
 
-  /v2/organizations/{org_id}/iam/v1/policies:
-    post:
-      tags: [IAM Policies]
-      summary: Create Policy
-      operationId: createPolicy
-      description: Create a new IAM policy with permissions within the organization.
+  /v2/roles/{id}/restore:
+    patch:
+      tags: [IAM Roles]
+      summary: Restore Role
+      operationId: restoreRole
+      description: Restore a previously soft-deleted IAM role.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
       responses:
+        '200':
+          description: Role restored
+
+  /v2/roles/{id}/policies:
+    post:
+      tags: [IAM Role-Policy Mappings]
+      summary: Attach Policy to Role
+      operationId: attachPolicyToRole
+      description: Attach an IAM policy to a role.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy attached to role
+    get:
+      tags: [IAM Role-Policy Mappings]
+      summary: List Role Policies
+      operationId: listRolePolicies
+      description: List all policies attached to a role.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of policies attached to role
+
+  /v2/roles/{id}/policies/{policy-id}:
+    delete:
+      tags: [IAM Role-Policy Mappings]
+      summary: Detach Policy from Role
+      operationId: detachPolicyFromRole
+      description: Detach an IAM policy from a role.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: policy-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy detached from role
+
+  # IAM Policies
+  /v2/policies:
+    post:
+      tags: [IAM Policies]
+      summary: Create Policy
+      operationId: createPolicy
+      description: Create a new IAM policy within the organization.
+      responses:
         '201':
           description: Policy created
-
     get:
       tags: [IAM Policies]
       summary: List Policies
       operationId: listPolicies
       description: List all IAM policies within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '200':
           description: List of policies
 
-  /v2/organizations/{org_id}/iam/v1/policies/{policy_id}:
+  /v2/policies/{id}:
     get:
       tags: [IAM Policies]
       summary: Get Policy
       operationId: getPolicy
-      description: Retrieve details of a specific IAM policy.
+      description: Retrieve a specific IAM policy by ID.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '200':
           description: Policy details
-
     put:
       tags: [IAM Policies]
       summary: Update Policy
       operationId: updatePolicy
-      description: Update the name, description, and JSON definition of an existing IAM policy.
+      description: Update an IAM policy's attributes.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: Human-readable name of the policy
-                description:
-                  type: string
-                  description: Description of what the policy is for
-                policy_json:
-                  type: object
-                  description: JSON definition of allowed/denied actions and conditions
-              required:
-                - name
-                - description
-                - policy_json
       responses:
         '200':
           description: Policy updated
-
     delete:
       tags: [IAM Policies]
       summary: Delete Policy
       operationId: deletePolicy
-      description: Delete an IAM policy and cleanup role associations. Policy must not be actively assigned.
+      description: Soft delete an IAM policy.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
       responses:
         '204':
           description: Policy deleted
 
-  /iam/v1/endpoint-actions:
-    get:
-      tags: [IAM Endpoint Actions]
-      summary: List All Active Endpoint Actions
-      operationId: listActiveEndpointActions
-      description: List all active endpoint-to-action mappings. These actions can be referenced when creating IAM policies.
-      responses:
-        '200':
-          description: List of active endpoint actions
-
-  /iam/v1/endpoint-actions/{id}:
-    get:
-      tags: [IAM Endpoint Actions]
-      summary: Get Endpoint Action Details
-      operationId: getEndpointActionDetails
-      description: View details of a specific endpoint-to-action mapping. Useful for policy authors or UI consumers.
+  /v2/policies/{id}/restore:
+    patch:
+      tags: [IAM Policies]
+      summary: Restore Policy
+      operationId: restorePolicy
+      description: Restore a previously soft-deleted IAM policy.
       parameters:
         - name: id
           in: path
           required: true
           schema:
-            type: integer
-      responses:
-        '200':
-          description: Action mapping details
-
-  /iam/v1/endpoint-actions/resources/{resource_type}:
-    get:
-      tags: [IAM Endpoint Actions]
-      summary: Filter Actions by Resource Type
-      operationId: filterActionsByResourceType
-      description: View all available IAM actions for a specific resource type (e.g., 'compute', 'storage').
-      parameters:
-        - name: resource_type
-          in: path
-          required: true
-          schema:
             type: string
       responses:
         '200':
-          description: List of matching actions
-          
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/policies/{policy_id}:
-    post:
-      tags: [IAM Role-Policy Mappings]
-      summary: Attach Policy to Role
-      operationId: attachPolicyToRole
-      description: Attach an IAM policy to a specific role within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '201':
-          description: Policy attached to role
+          description: Policy restored
 
-    delete:
-      tags: [IAM Role-Policy Mappings]
-      summary: Detach Policy from Role
-      operationId: detachPolicyFromRole
-      description: Detach an IAM policy from a specific role within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Policy detached from role
-
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/policies:
-    get:
-      tags: [IAM Role-Policy Mappings]
-      summary: List Policies Attached to Role
-      operationId: listPoliciesForRole
-      description: List all IAM policies currently attached to a specific role within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of policies attached to the role
-
-  /v2/organizations/{org_id}/iam/v1/users/{user_id}/policies/{policy_id}:
-    post:
-      tags: [IAM User-Policy Mappings]
-      summary: Attach Policy to User
-      operationId: attachPolicyToUser
-      description: Attach an IAM policy directly to a specific user within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '201':
-          description: Policy attached to user
-
-    delete:
-      tags: [IAM User-Policy Mappings]
-      summary: Detach Policy from User
-      operationId: detachPolicyFromUser
-      description: Detach an IAM policy from a specific user within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Policy detached from user
-
-  /v2/organizations/{org_id}/iam/v1/users/{user_id}/policies:
-    get:
-      tags: [IAM User-Policy Mappings]
-      summary: List Policies Attached to User
-      operationId: listPoliciesForUser
-      description: List all IAM policies currently attached to a specific user within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of policies attached to the user
-
-  /v2/organizations/{org_id}/iam/v1/groups/{group_id}/policies/{policy_id}:
-    post:
-      tags: [IAM Group-Policy Mappings]
-      summary: Attach Policy to Group
-      operationId: attachPolicyToGroup
-      description: Attach an IAM policy directly to a specific group within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '201':
-          description: Policy attached to group
-
-    delete:
-      tags: [IAM Group-Policy Mappings]
-      summary: Detach Policy from Group
-      operationId: detachPolicyFromGroup
-      description: Detach an IAM policy from a specific group within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: policy_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '204':
-          description: Policy detached from group
-
-  /v2/organizations/{org_id}/iam/v1/groups/{group_id}/policies:
-    get:
-      tags: [IAM Group-Policy Mappings]
-      summary: List Policies Attached to Group
-      operationId: listPoliciesForGroup
-      description: List all IAM policies currently attached to a specific group within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: List of policies attached to the group
-
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/trust/users/{user_id}:
+  # IAM Role Trust Relationships
+  /v2/role-trusts:
     post:
       tags: [IAM Trust Policies]
-      summary: Define Trust for User
-      operationId: defineTrustForUser
-      description: Define a trust relationship allowing a specific user to assume the role temporarily.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: user_id
-          in: path
-          required: true
-          schema:
-            type: integer
+      summary: Create Role Trust
+      operationId: createRoleTrust
+      description: Create a trust relationship for role assumption.
       responses:
         '201':
-          description: Trust relationship for user created
-
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/trust/groups/{group_id}:
-    post:
+          description: Role trust created
+    get:
       tags: [IAM Trust Policies]
-      summary: Define Trust for Group
-      operationId: defineTrustForGroup
-      description: Define a trust relationship allowing a specific group to assume the role temporarily.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
-        - name: group_id
-          in: path
-          required: true
-          schema:
-            type: integer
+      summary: List Role Trusts
+      operationId: listRoleTrusts
+      description: List all role trust relationships.
       responses:
-        '201':
-          description: Trust relationship for group created
+        '200':
+          description: List of role trusts
 
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/trust/{id}:
-    delete:
+  /v2/role-trusts/{id}:
+    get:
       tags: [IAM Trust Policies]
-      summary: Remove Trust Relationship
-      operationId: removeTrust
-      description: Remove an existing trust relationship between a role and a user or group.
+      summary: Get Role Trust
+      operationId: getRoleTrust
+      description: Retrieve a specific role trust relationship.
       parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
         - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
-        '204':
-          description: Trust relationship removed
-          
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/assume:
-    post:
-      tags: [IAM Assumed Roles]
-      summary: User Assumes Role (Temporary)
-      operationId: assumeRole
-      description: Allow a user to temporarily assume a trusted IAM role within the organization.
+        '200':
+          description: Role trust details
+    put:
+      tags: [IAM Trust Policies]
+      summary: Update Role Trust
+      operationId: updateRoleTrust
+      description: Update a role trust relationship.
       parameters:
-        - name: org_id
+        - name: id
           in: path
           required: true
           schema:
             type: string
-        - name: role_id
+      responses:
+        '200':
+          description: Role trust updated
+    delete:
+      tags: [IAM Trust Policies]
+      summary: Delete Role Trust
+      operationId: deleteRoleTrust
+      description: Delete a role trust relationship.
+      parameters:
+        - name: id
           in: path
           required: true
           schema:
-            type: integer
+            type: string
+      responses:
+        '204':
+          description: Role trust deleted
+
+  /v2/role-trusts/{id}/restore:
+    patch:
+      tags: [IAM Trust Policies]
+      summary: Restore Role Trust
+      operationId: restoreRoleTrust
+      description: Restore a previously deleted role trust relationship.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Role trust restored
+
+  /v2/role-trusts/by-role/{role-id}:
+    get:
+      tags: [IAM Trust Policies]
+      summary: List Role Trusts by Role
+      operationId: listRoleTrustsByRole
+      description: List all trust relationships for a specific role.
+      parameters:
+        - name: role-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of role trusts for the specified role
+
+  /v2/role-trusts/assumable/{user-id}:
+    get:
+      tags: [IAM Trust Policies]
+      summary: List Assumable Roles
+      operationId: listAssumableRoles
+      description: List all roles that can be assumed by a specific user.
+      parameters:
+        - name: user-id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of assumable roles
+
+  # IAM Assumed Roles (Active Sessions)
+  /v2/assumed-roles/assume:
+    post:
+      tags: [IAM Assumed Roles]
+      summary: Assume Role (Create Session)
+      operationId: createAssumedRoleSession
+      description: Create a new assumed role session.
       responses:
         '201':
-          description: Role assumed, session created
+          description: Assumed role session created
 
-  /v2/organizations/{org_id}/iam/v1/roles/{role_id}/token-exchange:
-    post:
-      tags: [IAM Assumed Roles]
-      summary: Exchange Token for Assumed Role
-      operationId: tokenExchange
-      description: Retrieve the session token and expiration for an assumed IAM role.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: role_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        '200':
-          description: Session token returned
-
-  /v2/organizations/{org_id}/iam/v1/sessions/{session_id}/refresh:
-    post:
-      tags: [IAM Assumed Roles]
-      summary: Refresh User Temporary Session
-      operationId: refreshTemporarySession
-      description: Extend the expiration of a currently active temporary role session.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: session_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Session expiration refreshed
-
-  /v2/organizations/{org_id}/iam/v1/sessions/{session_id}:
-    delete:
-      tags: [IAM Assumed Roles]
-      summary: Revoke User Temporary Session
-      operationId: revokeTemporarySession
-      description: Revoke a temporary role session for a user within the organization.
-      parameters:
-        - name: org_id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: session_id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '204':
-          description: Temporary session revoked
-
-  /v2/organizations/{org_id}/iam/v1/users/{user_id}/assumed-roles:
+  /v2/assumed-roles/{session-token}:
     get:
       tags: [IAM Assumed Roles]
-      summary: List Active Assumed Roles
-      operationId: listActiveAssumedRoles
-      description: List all currently active roles a user has assumed within the organization.
+      summary: Get Assumed Role Session
+      operationId: getAssumedRoleSession
+      description: Retrieve details of an assumed role session.
       parameters:
-        - name: org_id
+        - name: session-token
           in: path
           required: true
           schema:
             type: string
-        - name: user_id
+      responses:
+        '200':
+          description: Assumed role session details
+
+  /v2/assumed-roles/active:
+    get:
+      tags: [IAM Assumed Roles]
+      summary: List Active Sessions
+      operationId: listActiveSessions
+      description: List all active assumed role sessions for the current user.
+      responses:
+        '200':
+          description: List of active sessions
+
+  /v2/assumed-roles/{session-token}/revoke:
+    post:
+      tags: [IAM Assumed Roles]
+      summary: Revoke Assumed Role Session
+      operationId: revokeAssumedRoleSession
+      description: Revoke an active assumed role session.
+      parameters:
+        - name: session-token
           in: path
           required: true
           schema:
-            type: integer
+            type: string
       responses:
         '200':
-          description: List of active assumed roles
+          description: Session revoked
 
+  # IAM Endpoint Action Maps
+  /v2/endpoint-action-maps:
+    get:
+      tags: [IAM Endpoint Actions]
+      summary: List Endpoint Action Maps
+      operationId: listEndpointActionMaps
+      description: List all endpoint-to-action mappings.
+      responses:
+        '200':
+          description: List of endpoint action maps
+
+  /v2/endpoint-action-maps/available-actions:
+    get:
+      tags: [IAM Endpoint Actions]
+      summary: Get Available Actions
+      operationId: getAvailableActions
+      description: Retrieve all available actions that can be used in policies.
+      responses:
+        '200':
+          description: List of available actions
+
+  /v2/endpoint-action-maps/{id}:
+    get:
+      tags: [IAM Endpoint Actions]
+      summary: Get Endpoint Action Map
+      operationId: getEndpointActionMap
+      description: Retrieve a specific endpoint action mapping.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Endpoint action map details
