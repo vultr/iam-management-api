@@ -45,6 +45,8 @@ tags:
     description: Manage temporary role assumptions
   - name: IAM Endpoint Actions
     description: View available IAM endpoint-to-action mappings
+  - name: User Resources
+    description: Endpoints for viewing user-specific IAM resources (groups, roles, policies)
 
 paths:
   # Organizations
@@ -2540,6 +2542,292 @@ paths:
                 properties:
                   endpoint_action_map:
                     $ref: '#/components/schemas/EndpointActionMap'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # User-specific IAM Resources
+  /v2/users/me/groups:
+    get:
+      tags: [User Resources]
+      summary: List My Groups
+      operationId: listMyGroups
+      description: List all groups that the authenticated user belongs to
+      parameters:
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of user's groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: UUID of the authenticated user
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Group'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v2/users/me/roles:
+    get:
+      tags: [User Resources]
+      summary: List My Roles
+      operationId: listMyRoles
+      description: List all roles assigned to the authenticated user (both direct and via groups)
+      parameters:
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of user's roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: UUID of the authenticated user
+                  roles:
+                    type: object
+                    properties:
+                      direct:
+                        type: array
+                        description: Roles directly assigned to the user
+                        items:
+                          $ref: '#/components/schemas/Role'
+                      inherited:
+                        type: array
+                        description: Roles inherited from group memberships
+                        items:
+                          $ref: '#/components/schemas/Role'
+                      all:
+                        type: array
+                        description: All roles (direct + inherited)
+                        items:
+                          $ref: '#/components/schemas/Role'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v2/users/me/policies:
+    get:
+      tags: [User Resources]
+      summary: List My Policies
+      operationId: listMyPolicies
+      description: List all policies attached to the authenticated user (both direct and via roles/groups)
+      parameters:
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of user's policies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: UUID of the authenticated user
+                  policies:
+                    type: object
+                    properties:
+                      direct:
+                        type: array
+                        description: Policies directly attached to the user
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                      inherited:
+                        type: array
+                        description: Policies inherited from group memberships
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                      from_roles:
+                        type: array
+                        description: Policies attached via roles
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                      all:
+                        type: array
+                        description: All policies (direct + inherited + from_roles)
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /v2/users/{user-id}/groups:
+    get:
+      tags: [User Resources]
+      summary: List User Groups
+      operationId: listUserGroups
+      description: List all groups that a specific user belongs to
+      parameters:
+        - name: user-id
+          in: path
+          required: true
+          description: User UUID
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of user's groups
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: UUID of the user
+                  groups:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Group'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/users/{user-id}/roles:
+    get:
+      tags: [User Resources]
+      summary: List User Roles
+      operationId: listUserRoles
+      description: List all roles assigned to a specific user (both direct and via groups)
+      parameters:
+        - name: user-id
+          in: path
+          required: true
+          description: User UUID
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of user's roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: UUID of the user
+                  roles:
+                    type: object
+                    properties:
+                      direct:
+                        type: array
+                        description: Roles directly assigned to the user
+                        items:
+                          $ref: '#/components/schemas/Role'
+                      inherited:
+                        type: array
+                        description: Roles inherited from group memberships
+                        items:
+                          $ref: '#/components/schemas/Role'
+                      all:
+                        type: array
+                        description: All roles (direct + inherited)
+                        items:
+                          $ref: '#/components/schemas/Role'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/users/{user-id}/policies:
+    get:
+      tags: [User Resources]
+      summary: List User Policies
+      operationId: listUserPolicies
+      description: List all policies attached to a specific user (both direct and via roles/groups)
+      parameters:
+        - name: user-id
+          in: path
+          required: true
+          description: User UUID
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of user's policies
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                    description: UUID of the user
+                  policies:
+                    type: object
+                    properties:
+                      direct:
+                        type: array
+                        description: Policies directly attached to the user
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                      inherited:
+                        type: array
+                        description: Policies inherited from group memberships
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                      from_roles:
+                        type: array
+                        description: Policies attached via roles
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                      all:
+                        type: array
+                        description: All policies (direct + inherited + from_roles)
+                        items:
+                          $ref: '#/components/schemas/Policy'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
