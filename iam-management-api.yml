@@ -517,7 +517,7 @@ paths:
   /v2/invitations:
     get:
       tags: [Organization Invitations]
-      summary: List All Organization Invitations
+      summary: List Invitations
       operationId: listOrganizationInvites
       description: List all organization invitations across all organizations
       parameters:
@@ -1154,7 +1154,7 @@ paths:
                       description:
                         type: string
                   Roles:
-                    type: Array
+                    type: array
                     items:
                        $ref: '#/components/schemas/GroupAttachedRole'
                   meta:
@@ -2968,6 +2968,9 @@ components:
           format: uuid
         inviter_name:
           type: string
+        inviter_email:
+          type: string
+          format: email
         email_invited:
           type: string
           format: email
@@ -2985,7 +2988,7 @@ components:
             api_enabled:
               type: string
               enum: [yes, no]
-        org_uuid:
+        org_id:
           type: string
           format: uuid
         org_name:
@@ -3004,6 +3007,8 @@ components:
         expiration_date:
           type: string
           format: date-time
+        invite_status:
+          type: string
 
     SuspendedUser:
       type: object
@@ -3105,11 +3110,6 @@ components:
             - assignable
           description: Type of role
           example: assumable
-        max_session_duration:
-          type: integer
-          minimum: 900
-          maximum: 43200
-          default: 3600
         date_assigned:
           type: string
           format: date-time
@@ -3148,7 +3148,7 @@ components:
           type: string
         policy_document:
           type: object
-        from_roles:
+        from_role:
           type: string
         source:
           type: string
