@@ -513,8 +513,6 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         '403':
           $ref: '#/components/responses/Forbidden'
-
-  /v2/invitations:
     get:
       tags: [Organization Invitations]
       summary: List Invitations
