@@ -227,70 +227,6 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /v2/organizations/invitations:
-    get:
-      tags: [Organizations]
-      summary: List All Organization Invitations
-      operationId: listOrganizationInvites
-      description: List all organization invitations across all organizations
-      parameters:
-        - $ref: '#/components/parameters/per_page'
-        - $ref: '#/components/parameters/cursor'
-      responses:
-        '200':
-          description: List of organization invitations
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  invites:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OrganizationInvitation'
-                  meta:
-                    $ref: '#/components/schemas/Meta'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-
-  /v2/organizations/{id}/invitations:
-    get:
-      tags: [Organizations]
-      summary: List Organization Invitations by Org
-      operationId: organizationListInvites
-      description: List invitations for a specific organization
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - $ref: '#/components/parameters/per_page'
-        - $ref: '#/components/parameters/cursor'
-      responses:
-        '200':
-          description: List of invitations for the organization
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  invites:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/OrganizationInvitation'
-                  meta:
-                    $ref: '#/components/schemas/Meta'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
   # Organization Membership Management
   /v2/organizations/{id}/user/{user_id}:
     delete:
@@ -573,6 +509,32 @@ paths:
                 $ref: '#/components/schemas/OrganizationInvitation'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    get:
+      tags: [Organization Invitations]
+      summary: List Invitations
+      operationId: listOrganizationInvites
+      description: List all organization invitations across all organizations
+      parameters:
+        - $ref: '#/components/parameters/per_page'
+        - $ref: '#/components/parameters/cursor'
+      responses:
+        '200':
+          description: List of organization invitations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invites:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrganizationInvitation'
+                  meta:
+                    $ref: '#/components/schemas/Meta'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -1106,6 +1068,95 @@ paths:
       responses:
         '204':
           description: Member removed
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/groups/{id}/policies:
+    get:
+      tags: [IAM Groups]
+      summary: List Policies for Group
+      operationId: listPoliciesForGroup
+      description: List all policies that are attached to this group
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: List Policies for Group
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Group:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      description:
+                        type: string
+                  policies:
+                    type: object
+                    properties:
+                      direct:
+                        type: array
+                        items:
+                         $ref: '#/components/schemas/GroupAttachedPolicy'
+                      from_roles:
+                        type: array
+                        items:
+                         $ref: '#/components/schemas/GroupAttachedPolicy'
+                      all:
+                        type: array
+                        items:
+                         $ref: '#/components/schemas/GroupAttachedPolicy'
+                  meta:
+                    $ref: '#/components/schemas/MetaWithoutPagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v2/groups/{id}/roles:
+    get:
+      tags: [IAM Groups]
+      summary: List Roles for Group
+      operationId: listRolesForGroup
+      description: List all roles that are attached to this group
+      parameters:
+        - $ref: '#/components/parameters/id'
+      responses:
+        '200':
+          description: List Roles for Group
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Group:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                      name:
+                        type: string
+                      description:
+                        type: string
+                  Roles:
+                    type: array
+                    items:
+                       $ref: '#/components/schemas/GroupAttachedRole'
+                  meta:
+                    $ref: '#/components/schemas/MetaWithoutPagination'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -2915,6 +2966,9 @@ components:
           format: uuid
         inviter_name:
           type: string
+        inviter_email:
+          type: string
+          format: email
         email_invited:
           type: string
           format: email
@@ -2932,7 +2986,7 @@ components:
             api_enabled:
               type: string
               enum: [yes, no]
-        org_uuid:
+        org_id:
           type: string
           format: uuid
         org_name:
@@ -2951,6 +3005,8 @@ components:
         expiration_date:
           type: string
           format: date-time
+        invite_status:
+          type: string
 
     SuspendedUser:
       type: object
@@ -3028,6 +3084,33 @@ components:
           items:
             $ref: '#/components/schemas/Policy'
           description: Attached policies (only included when policies are attached)
+    
+    GroupAttachedRole:
+      type: object
+      required:
+        - id
+        - name
+        - role_type
+        - max_session_duration
+        - date_assigned
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        role_type:
+          type: string
+          enum:
+            - assumable
+            - assignable
+          description: Type of role
+          example: assumable
+        date_assigned:
+          type: string
+          format: date-time
 
     # Policy Schemas
     Policy:
@@ -3050,6 +3133,26 @@ components:
         is_system_policy:
           type: boolean
           description: Whether this is a system-managed policy
+
+    GroupAttachedPolicy:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        policy_document:
+          type: object
+        from_role:
+          type: string
+        source:
+          type: string
+        date_assigned:
+          type: string
+          format: date-time
 
     # Role Assignment Schemas
     RoleAssignment:
@@ -3484,6 +3587,14 @@ components:
             prev:
               type: string
               description: Cursor for previous page
+
+    MetaWithoutPagination:
+      type: object
+      description: Result Count metadata
+      properties:
+        total:
+          type: integer
+          description: Total number of items
 
   responses:
     BadRequest:
