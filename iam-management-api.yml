@@ -48,7 +48,7 @@ tags:
   - name: User Resources
     description: Endpoints for viewing user-specific IAM resources (groups, roles, policies)
   - name: Logs
-    description: Endpoints for viewing logs and for managing an extended log subcription
+    description: Endpoints for viewing logs and for managing an extended log subscription
 
 paths:
   # Organizations
@@ -2985,8 +2985,8 @@ paths:
     post:
       tags: [Logs]
       summary: Create extended log subscription
-      operationId: CreateExtenedeLog
-      description: Create a subscription for extended logging to hold logs in object storage for 400 days.  An account may only have one extended log subscription.  Once the subscription is created and the object storage is activated logs are trasfered in 15 minute intervals.
+      operationId: CreateExtendedeLog
+      description: Create a subscription for extended logging to hold logs in object storage for 400 days.  An account may only have one extended log subscription.  Once the subscription is created and the object storage is activated logs are transfered in 15 minute intervals.
       requestBody:
         required: true
         content:
@@ -3047,12 +3047,12 @@ paths:
       tags: [Logs]
       summary: Get extended log subscription
       operationId: GetExtendedLog
-      description: View information for a specific extened log subscription
+      description: View information for a specific extended log subscription
       parameters:
         - name: id
           in: path
           required: true
-          description: Extened log subscription UUID
+          description: Extended log subscription UUID
           schema:
             type: string
             format: uuid
@@ -3073,12 +3073,12 @@ paths:
       tags: [Logs]
       summary: Update extended log subscription
       operationId: UpdateExtendedLog
-      description: Update information for a specific extened log subscription
+      description: Update information for a specific extended log subscription
       parameters:
         - name: id
           in: path
           required: true
-          description: Extened log subscription UUID
+          description: Extended log subscription UUID
           schema:
             type: string
             format: uuid
@@ -3110,12 +3110,12 @@ paths:
       tags: [Logs]
       summary: Close extended log subscription
       operationId: CloseExtendedLog
-      description: Close a specific extened log subscription
+      description: Close a specific extended log subscription
       parameters:
         - name: id
           in: path
           required: true
-          description: Extened log subscription UUID
+          description: Extended log subscription UUID
           schema:
             type: string
             format: uuid
@@ -3825,7 +3825,6 @@ components:
         - log_level
         - message
         - timestamp
-        - metadata
       properties:
         resource_id:
           type: string
@@ -3852,11 +3851,11 @@ components:
         timestamp:
           type: string
           minLength: 1
-          description: the UTC timestamp of the time at which the log was generated.
+          description: The UTC timestamp of the time at which the log was generated.
         metadata:
           type: object
           minLength: 1
-          description: a set of data that is specific to the logged event.  the properties of this object can varry depending on the source of the log.
+          description: A set of data that is specific to the logged event.  The properties of this object can varry depending on the source of the log.
           required:
             - user_id
             - ip_address
@@ -3945,7 +3944,7 @@ components:
           type: string
           format: date-time
           description: The date and time that the subscription was created.
-          example: "2025-10-24 10:03:08"
+          example: "2025-10-24T20:10:16+00:00"
         cluster_id:
           type: integer
           description: The id of the cluster used for object storage.
@@ -3960,7 +3959,7 @@ components:
           example: "New Jersey"
         label:
           type: string
-          description: The lable used to identify the subscritpion.
+          description: The label used to identify the subscritpion.
           example: "my_extended_log"
         sub_status:
           type: string
@@ -3968,7 +3967,7 @@ components:
           example: "active"
         storage_status:
           type: string
-          description: The status of the object stroage that will be used to store the logs. There may be a delay of about a minute between creating the subscription and the object storage being activated.
+          description: The status of the object storage that will be used to store the logs. There may be a delay of about a minute between creating the subscription and the object storage being activated.
           example: "active"
         s3_hostname:
           type: string
