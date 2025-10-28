@@ -48,7 +48,7 @@ tags:
   - name: User Resources
     description: Endpoints for viewing user-specific IAM resources (groups, roles, policies)
   - name: Logs
-    description: Endpoints for viewing Logs and for managing an extended log subcription
+    description: Endpoints for viewing logs and for managing an extended log subcription
 
 paths:
   # Organizations
