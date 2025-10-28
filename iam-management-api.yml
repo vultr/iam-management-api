@@ -2985,7 +2985,7 @@ paths:
     post:
       tags: [Logs]
       summary: Create extended log subscription
-      operationId: CreateExtendedeLog
+      operationId: CreateExtendedLog
       description: Create a subscription for extended logging to hold logs in object storage for 400 days.  An account may only have one extended log subscription.  Once the subscription is created and the object storage is activated logs are transfered in 15 minute intervals.
       requestBody:
         required: true
