@@ -1743,9 +1743,9 @@ paths:
 
     put:
       tags: [IAM Policies]
-      summary: Update Policy (Not Supported)
+      summary: Update Policy
       operationId: updatePolicy
-      description: Policies are immutable and cannot be modified. This endpoint will always return an error. To change a policy, create a new one and delete the old one.
+      description: Update an IAM policy
       parameters:
         - $ref: '#/components/parameters/id'
       requestBody:
