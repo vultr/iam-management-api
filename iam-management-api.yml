@@ -48,7 +48,7 @@ tags:
   - name: User Resources
     description: Endpoints for viewing user-specific IAM resources (groups, roles, policies)
   - name: Logs
-    description: Endpoints for viewing logs and for managing an extended log subscription
+    description: Endpoints for viewing logs and for managing an audit logs subscription
 
 paths:
   # Organizations
@@ -2981,12 +2981,12 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /v2/logs/extended-log:
+  /v2/logs/audit-logs:
     post:
       tags: [Logs]
-      summary: Create extended log subscription
-      operationId: CreateExtendedLog
-      description: Create a subscription for extended logging to hold logs in object storage for 400 days.  An account may only have one extended log subscription.  Once the subscription is created and the object storage is activated logs are transfered in 15 minute intervals.
+      summary: Create audit logs subscription
+      operationId: CreateAuditLogs
+      description: Create a subscription for audit logging to hold logs in object storage for 400 days.  An account may only have one audit logs subscription.  Once the subscription is created and the object storage is activated logs are transfered in 15 minute intervals.
       requestBody:
         required: true
         content:
@@ -2996,6 +2996,7 @@ paths:
               required:
                 - cluster_id
                 - label
+                - expiration_days
               properties:
                 cluster_id:
                   type: integer
@@ -3004,7 +3005,11 @@ paths:
                 label:
                   type: string
                   description: A label to identify the subscription.
-                  example: my_extended_log
+                  example: my_audit_logs
+                expiration_days:
+                  type: integer
+                  description: The number of days to store log files for.  After a log file is upload it can not be deleted until the number of days set for expiration_days has elapsed.  Once that time has elapsed the file will be deleted automaticaly.
+                  example: 400
       responses:
         '201':
           description: Extended Log Details
@@ -3020,12 +3025,12 @@ paths:
           $ref: '#/components/responses/NotFound'
     get:
       tags: [Logs]
-      summary: List extended log subscriptions
-      operationId: ListExtendedLog
-      description: List existing extended log subscriptions.
+      summary: List audit logs subscriptions
+      operationId: ListAuditLogs
+      description: List existing audit logs subscriptions.
       responses:
         '200':
-          description: List of extended log subscriptions
+          description: List of audit logs subscriptions
           content:
             application/json:
               schema:
@@ -3042,12 +3047,12 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
-  /v2/logs/extended-log/{id}:
+  /v2/logs/audit-logs/{id}:
     get:
       tags: [Logs]
-      summary: Get extended log subscription
+      summary: Get audit logs subscription
       operationId: GetExtendedLog
-      description: View information for a specific extended log subscription
+      description: View information for a specific audit logs subscription
       parameters:
         - name: id
           in: path
@@ -3071,9 +3076,9 @@ paths:
           $ref: '#/components/responses/NotFound'
     put:
       tags: [Logs]
-      summary: Update extended log subscription
+      summary: Update audit logs subscription
       operationId: UpdateExtendedLog
-      description: Update information for a specific extended log subscription
+      description: Update information for a specific audit logs subscription
       parameters:
         - name: id
           in: path
@@ -3092,7 +3097,11 @@ paths:
                 label:
                   type: string
                   description: A label to identify the subscription.
-                  example: my_extended_log
+                  example: my_audit_logs
+                expiration_days:
+                  type: integer
+                  description: The number of days for log files to be stored.  After a log file is upload it can not be deleted until the number of days set for expiration_days has elapsed.  Once that time has elapsed the file will be deleted automaticaly.
+                  example: 400
       responses:
         '200':
           description: Extended Log Details
@@ -3100,28 +3109,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ExtendedLog'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '403':
-          $ref: '#/components/responses/Forbidden'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      tags: [Logs]
-      summary: Close extended log subscription
-      operationId: CloseExtendedLog
-      description: Close a specific extended log subscription
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: Extended log subscription UUID
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Extended log subscription deleted
         '401':
           $ref: '#/components/responses/Unauthorized'
         '403':
@@ -3938,7 +3925,7 @@ components:
       properties:
         id:
           type: string
-          description: The unique id for the extended log subscription.
+          description: The unique id for the audit logs subscription.
           example: "e106f15e-ab58-4648-9106-19104b85ff65"
         date_created:
           type: string
@@ -3960,10 +3947,10 @@ components:
         label:
           type: string
           description: The label used to identify the subscritpion.
-          example: "my_extended_log"
+          example: "my_audit_logs"
         sub_status:
           type: string
-          description: The status of the extended log subscription.
+          description: The status of the audit logs subscription.
           example: "active"
         storage_status:
           type: string
@@ -3985,11 +3972,15 @@ components:
           type: string
           description: The name of the bucket on object storage, in which the logs will be stored.
           example: "c2af82b2-0db0-4862-ae0d-3eee783df5ff-auditlog"
-        disk_gb_price:
+        prefix:
+          type: string
+          description: The vaue that will be used for the prifix part of the object key of each log file that is stored.
+          example: "7952126"
+        retention_gb_price:
           type: number
           description: The price per gigabite of disk space used for the billing period.
           example: 0
-        ingestion_price:
+        ingestion_gb_price:
           type: number
           description: The price per gigabite of files uploaded during the billig period.
           example: 0
