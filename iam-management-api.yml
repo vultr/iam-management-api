@@ -2985,7 +2985,7 @@ paths:
     post:
       tags: [Logs]
       summary: Create audit logs subscription
-      operationId: CreateExtendedLog
+      operationId: CreateAuditLogs
       description: Create a subscription for audit logging to hold logs in object storage for 400 days.  An account may only have one audit logs subscription.  Once the subscription is created and the object storage is activated logs are transfered in 15 minute intervals.
       requestBody:
         required: true
@@ -3026,7 +3026,7 @@ paths:
     get:
       tags: [Logs]
       summary: List audit logs subscriptions
-      operationId: ListExtendedLog
+      operationId: ListAuditLogs
       description: List existing audit logs subscriptions.
       responses:
         '200':
