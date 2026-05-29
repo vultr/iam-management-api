@@ -3115,7 +3115,30 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
-
+  /v2/logs/audit-logs/clusters:
+    get:
+      tags: [Logs]
+      summary: List audit logs Clusters
+      operationId: ListAuditLogsClusters
+      description: List Clusters available for audit logs.
+      responses:
+        '200':
+          description: List of audit logs clusters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  locations:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ExtendedLogCluster'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   parameters:
     id:
@@ -3976,6 +3999,18 @@ components:
           type: string
           description: The vaue that will be used for the prifix part of the object key of each log file that is stored.
           example: "7952126"
+        expiration_days:
+          type: number
+          description: The number of days to retain logs before they expire.
+          example: 400
+        retention_gb:
+          type: number
+          description: The average daily retention for the current pay cycle in gb(1024^3).
+          example: 0
+        ingestion_gb:
+          type: number
+          description: The total ingestion for the current pay cycle in gb(1024^3).
+          example: 0
         retention_gb_price:
           type: number
           description: The price per gigabite of disk space used for the billing period.
@@ -3992,6 +4027,34 @@ components:
           type: number
           description: The expected charges for the current billing period.
           example: 0
+        storage_used_bytes:
+          type: number
+          description: The current storage usage in bytes.
+          example: 0
+
+    ExtendedLogCluster:
+      type: object
+      properties:
+        id:
+          type: int
+          description: The unique id for the audit logs culster.
+          example: 2
+        region:
+          type: string
+          description: The region id where the cluster is located.
+          example: "ewr"
+        hostname:
+          type: string
+          description: The hostname used to connect to object storage on the cluster.
+          example: "ewr1.vultrobjects.com"
+        name:
+          type: string
+          description: Location of the cluster.
+          example: "New Jersey"
+        deploy:
+          type: string
+          description: The Cluster is eligible for Object Storage deployment..
+          example: "yes"
 
     # Common Schemas
     Meta:
